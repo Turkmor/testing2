@@ -1,11 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Hello GitHub Pages!</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aroma Alchemy</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f1ec;
+    }
+    .screen {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .screen.active {
+      display: flex;
+    }
+    .title {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
+    .enter-btn, .submit-btn, .regenerate-btn {
+      padding: 10px 20px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .enter-btn { background-color: #fff; }
+    .submit-btn { background-color: #4caf50; color: #fff; }
+    .regenerate-btn { background-color: #ffc107; color: #000; }
+    .desk-paper {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .checkbox-group label {
+      display: block;
+      margin: 5px 0;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello, world! 👋</h1>
-  <p>I am a girlboss 🎉</p>
+
+<!-- Title screen -->
+<div class="screen active" id="startScreen">
+  <div class="title">Aroma Alchemy</div>
+  <button class="enter-btn" onclick="enterApp()">Enter</button>
+</div>
+
+<!-- Input screen -->
+<div class="screen" id="mainScreen">
+  <div class="desk-paper">
+    <h2>Select Your Mood</h2>
+    <div class="checkbox-group" id="moodOptions">
+      <label><input type="checkbox" value="anxious"> Anxious</label>
+      <label><input type="checkbox" value="tired"> Tired</label>
+      <label><input type="checkbox" value="foggy"> Foggy</label>
+      <label><input type="checkbox" value="unmotivated"> Unmotivated</label>
+      <label><input type="checkbox" value="sad"> Sad</label>
+      <label><input type="checkbox" value="stressed"> Stressed</label>
+    </div>
+
+    <h2>What are you doing?</h2>
+    <div class="checkbox-group" id="activityOptions">
+      <label><input type="checkbox" value="studying"> Studying</label>
+      <label><input type="checkbox" value="crafting"> Crafting</label>
+      <label><input type="checkbox" value="cleaning"> Cleaning</label>
+      <label><input type="checkbox" value="watching"> Watching a Movie</label>
+      <label><input type="checkbox" value="resting"> Resting</label>
+      <label><input type="checkbox" value="sleeping"> Sleeping</label>
+    </div>
+
+    <button class="submit-btn" onclick="generateBlend()">Create My Blend</button>
+  </div>
+</div>
+
+<!-- Output screen -->
+<div class="screen" id="resultScreen">
+  <div class="desk-paper">
+    <h2>Your Recipe</h2>
+    <pre id="blendResult"></pre>
+    <button class="regenerate-btn" onclick="regenerateBlend()">Regenerate</button>
+    <button class="submit-btn" onclick="goBack()">Back</button>
+  </div>
+</div>
+
+<script>
+  function enterApp() {
+    document.getElementById('startScreen').classList.remove('active');
+    document.getElementById('mainScreen').classList.add('active');
+  }
+
+  const oils = {
+    rosemary: {
+      keywords: ['focus', 'clarity', 'energy', 'studying'],
+      notes: 'Great for focus, breathing, and energizing the mind.'
+    },
+    cedarwood: {
+      keywords: ['grounding', 'calm', 'sleep', 'anxiety'],
+      notes: 'Calms the mind, promotes grounding and deep rest.'
+    },
+    elevation: {
+      keywords: ['joy', 'energy', 'uplift', 'mood'],
+      notes: 'Uplifts mood and boosts energy, great for emotional resets.'
+    },
+    bergamot: {
+      keywords: ['anxiety', 'joy', 'emotional balance', 'sad'],
+      notes: 'Uplifts mood, reduces anxiety, promotes emotional harmony.'
+    },
+    eucalyptus: {
+      keywords: ['breathe', 'clarity', 'cleaning'],
+      notes: 'Clears the airways, boosts clarity, good for respiratory support.'
+    },
+    serenity: {
+      keywords: ['calm', 'sleep', 'stress', 'resting'],
+      notes: 'Promotes deep relaxation, reduces stress, ideal for sleep.'
+    },
+    peppermint: {
+      keywords: ['focus', 'energy', 'refreshing', 'tired'],
+      notes: 'Stimulates alertness, clears mental fog, refreshes senses.'
+    },
+    lavender: {
+      keywords: ['calm', 'stress', 'anxiety', 'resting'],
+      notes: 'Soothes the mind, helps with stress and promotes calm.'
+    },
+    oregano: {
+      keywords: ['immunity', 'cleansing', 'strength'],
+      notes: 'Powerful cleansing properties, supports immune system.'
+    },
+    tea_tree: {
+      keywords: ['purifying', 'clarity', 'cleaning'],
+      notes: 'Cleanses air and surfaces, promotes mental clarity.'
+    },
+    dandelion: {
+      keywords: ['detox', 'cleansing', 'stagnation'],
+      notes: 'Symbolic of renewal, supports emotional clearing and detox.'
+    }
+  };
+
+  function generateBlend() {
+    const selectedMoods = Array.from(document.querySelectorAll('#moodOptions input:checked')).map(input => input.value);
+    const selectedActivities = Array.from(document.querySelectorAll('#activityOptions input:checked')).map(input => input.value);
+
+    const relevantKeywords = [...selectedMoods, ...selectedActivities];
+    const isStudying = selectedActivities.includes('studying');
+    const relaxingKeywords = ['calm', 'resting', 'sleep', 'sleeping'];
+    const energizingKeywords = ['focus', 'energy', 'clarity'];
+
+    let filteredOils = [];
+    for (const [name, data] of Object.entries(oils)) {
+      const matches = data.keywords.filter(k => relevantKeywords.includes(k));
+      if (matches.length > 0) {
+        const isRelaxing = data.keywords.some(k => relaxingKeywords.includes(k));
+        if (isStudying && isRelaxing) continue;
+
+        filteredOils.push({
+          name,
+          drops: matches.length >= 2 ? 2 : 1,
+          notes: data.notes,
+          matchScore: matches.length
+        });
+      }
+    }
+
+    filteredOils.sort((a, b) => b.matchScore - a.matchScore);
+    const recommended = filteredOils.slice(0, 3);
+
+    let blendText = '';
+    recommended.forEach(oil => {
+      blendText += `${capitalize(oil.name)}: ${oil.drops} drops\n`;
+    });
+    blendText += '\nMore info:\n';
+    recommended.forEach(oil => {
+      blendText += `${capitalize(oil.name)}: ${oil.notes}\n`;
+    });
+
+    document.getElementById('mainScreen').classList.remove('active');
+    document.getElementById('resultScreen').classList.add('active');
+    document.getElementById('blendResult').textContent = blendText;
+  }
+
+  function regenerateBlend() {
+    generateBlend();
+  }
+
+  function goBack() {
+    document.getElementById('resultScreen').classList.remove('active');
+    document.getElementById('mainScreen').classList.add('active');
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+</script>
+
 </body>
 </html>
